@@ -1,0 +1,32 @@
+{
+  email {$CADDY_EMAIL}
+  servers {
+    trusted_proxies static private_ranges
+  }
+}
+
+{$DOMAIN:localhost} {
+  encode zstd gzip
+  request_body {
+    max_size 12MB
+  }
+  header {
+    -Server
+    X-Content-Type-Options nosniff
+    X-Frame-Options DENY
+    Referrer-Policy same-origin
+    Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
+  }
+  reverse_proxy web:8000 {
+    health_uri /health/live/
+    health_interval 30s
+    transport http {
+      dial_timeout 5s
+      response_header_timeout 65s
+    }
+  }
+  log {
+    output stdout
+    format json
+  }
+}

@@ -1,0 +1,12 @@
+x-image: &production-image
+  image: ${APP_IMAGE:?Set APP_IMAGE ke tag image versioned}
+  build: null
+
+services:
+  web:
+    <<: *production-image
+  worker:
+    <<: *production-image
+  beat:
+    <<: *production-image
+    profiles: [full]

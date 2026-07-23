@@ -1,0 +1,6 @@
+{% extends "admin/base.html" %}
+{% load static %}
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'admin/admin.css' %}">{% endblock %}
+{% block extrahead %}{{ block.super }}<script src="{% static 'admin/charts.js' %}" defer></script>{% endblock %}
+{% block branding %}<div class="admin-brand"><span>✦</span><div><strong>{{ site_header }}</strong><small>Kontrol operasional</small></div></div>{% endblock %}
+{% block nav-global %}{% if user.must_review_security_notice %}<div class="security-notice">Anda masih menggunakan akun administrator bootstrap. Ganti password setelah deployment pertama.</div>{% endif %}{% endblock %}

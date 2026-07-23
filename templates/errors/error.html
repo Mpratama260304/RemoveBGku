@@ -1,0 +1,3 @@
+{% extends "base.html" %}
+{% block title %}{{ code }} · {{ SITE_NAME }}{% endblock %}
+{% block content %}<section class="page-shell"><div class="container empty-state error-state"><span class="error-code">{{ code }}</span><h1>{{ title }}</h1><p>Permintaan tidak dapat diselesaikan. Coba kembali ke beranda atau ulangi beberapa saat lagi.</p><a class="button button-primary" href="{% url 'home' %}">Kembali ke beranda</a></div></section>{% endblock %}

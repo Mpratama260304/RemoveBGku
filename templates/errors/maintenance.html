@@ -1,0 +1,3 @@
+{% extends "base.html" %}
+{% block title %}Pemeliharaan · {{ SITE_NAME }}{% endblock %}
+{% block content %}<section class="page-shell"><div class="container empty-state error-state"><span class="processing-visual"><span></span><i>✦</i></span><h1>Sedang dirapikan sebentar</h1><p>{{ config.maintenance_message }}</p><a class="button button-secondary" href="{% url 'health-live' %}">Cek status aplikasi</a></div></section>{% endblock %}

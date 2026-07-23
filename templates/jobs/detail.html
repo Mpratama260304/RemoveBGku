@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ job.original_filename }} · {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="page-shell job-page" id="job-page" data-status-url="{% url 'jobs:status' job.public_id %}" data-status="{{ job.status }}">
+  <div class="container">
+    <div class="page-header job-header">
+      <div><a class="back-link" href="{% url 'history' %}">← Riwayat</a><h1>{{ job.original_filename }}</h1><p>Dibuat {{ job.created_at|date:"d M Y, H:i" }} · kedaluwarsa {{ job.expires_at|timeuntil }}</p></div>
+      <span class="status-badge status-{{ job.status }}" id="job-status">{{ job.get_status_display }}</span>
+    </div>
+
+    {% if job.status == 'queued' or job.status == 'processing' %}
+    <div class="processing-card" id="processing-card">
+      <div class="processing-visual"><span></span><i>✦</i></div>
+      <h2 id="processing-title">{% if job.status == 'queued' %}Menunggu giliran pemrosesan{% else %}AI sedang menghapus background{% endif %}</h2>
+      <p>Halaman ini memperbarui status otomatis. Anda boleh tetap di sini atau kembali ke Riwayat.</p>
+      <div class="real-loader"><span></span></div>
+    </div>
+    {% endif %}
+
+    <div class="result-area" id="result-area" {% if job.status != 'succeeded' %}hidden{% endif %}>
+      <div class="comparison" id="comparison">
+        <img class="comparison-after" src="{% if job.result_file %}{% url 'jobs:asset' job.public_id 'result' %}{% endif %}" id="result-image" alt="Hasil gambar dengan background transparan">
+        <div class="comparison-before" id="comparison-before"><img src="{% url 'jobs:asset' job.public_id 'original' %}" alt="Gambar sebelum background dihapus"></div>
+        <input type="range" id="comparison-range" min="0" max="100" value="50" aria-label="Geser untuk membandingkan sebelum dan sesudah">
+        <span class="compare-label label-before">Sebelum</span><span class="compare-label label-after">Sesudah</span>
+      </div>
+      <div class="result-actions">
+        <div><h2>Hasil siap digunakan</h2><p>PNG transparan · {{ job.result_width }}×{{ job.result_height }} · {{ job.result_size_bytes|filesizeformat }}</p></div>
+        <a class="button button-primary" id="download-link" href="{% url 'jobs:download' job.public_id %}">Unduh PNG ↓</a>
+      </div>
+    </div>
+
+    <div class="failure-card" id="failure-card" {% if job.status != 'failed' %}hidden{% endif %}>
+      <span>!</span><h2>Pemrosesan belum berhasil</h2><p id="job-error">{{ job.error_message_public }}</p>
+      <form action="{% url 'jobs:retry' job.public_id %}" method="post">{% csrf_token %}<button class="button button-primary" type="submit">Coba lagi</button></form>
+    </div>
+
+    <div class="job-footer-actions">
+      <a class="button button-secondary" href="{% url 'home' %}#upload">Proses gambar lain</a>
+      {% if job.status != 'files_deleted' %}<form action="{% url 'jobs:delete' job.public_id %}" method="post" data-confirm="File akan dihapus permanen dan tidak dapat dipulihkan. Lanjutkan?">{% csrf_token %}<button class="button button-danger" type="submit">Hapus file</button></form>{% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}<script src="{% static 'js/job.js' %}" defer></script>{% endblock %}

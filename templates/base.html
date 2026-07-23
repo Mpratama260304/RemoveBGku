@@ -1,0 +1,53 @@
+{% load static %}
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="{{ SITE_TAGLINE }}. Gambar diproses aman di server dan dihapus otomatis.">
+  <title>{% block title %}{{ SITE_NAME }}{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <a class="skip-link" href="#content">Lewati ke konten</a>
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a class="brand" href="{% url 'home' %}" aria-label="{{ SITE_NAME }}, beranda">
+        <span class="brand-mark" aria-hidden="true"><span></span></span>
+        <span>{{ SITE_NAME }}</span>
+      </a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+      <nav id="site-nav" class="site-nav" aria-label="Navigasi utama">
+        <a href="{% url 'home' %}">Beranda</a>
+        <a href="{% url 'history' %}">Riwayat</a>
+        <a href="{% url 'privacy' %}">Privasi</a>
+        <a href="{% url 'faq' %}">FAQ</a>
+      </nav>
+    </div>
+  </header>
+  {% if messages %}
+    <div class="container notices" role="status">
+      {% for message in messages %}<div class="notice">{{ message }}</div>{% endfor %}
+    </div>
+  {% endif %}
+  <main id="content">{% block content %}{% endblock %}</main>
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div>
+        <a class="brand brand-footer" href="{% url 'home' %}"><span class="brand-mark" aria-hidden="true"><span></span></span>{{ SITE_NAME }}</a>
+        <p>Hapus latar gambar dengan AI lokal. Diproses di server, tanpa akun.</p>
+      </div>
+      <div class="footer-links">
+        <a href="{% url 'privacy' %}">Privasi</a>
+        <a href="{% url 'terms' %}">Ketentuan</a>
+        <a href="{% url 'faq' %}">FAQ</a>
+        <a href="{% url 'health-live' %}"><span class="status-dot"></span>Status aplikasi</a>
+      </div>
+    </div>
+    <div class="container footer-bottom">© {{ current_year }} {{ SITE_NAME }} <span>Versi {{ APP_VERSION }}</span></div>
+  </footer>
+  <script src="{% static 'js/site.js' %}" defer></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
