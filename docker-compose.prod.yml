@@ -10,4 +10,3 @@ services:
     <<: *production-image
   beat:
     <<: *production-image
-    profiles: [full]

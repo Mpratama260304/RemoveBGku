@@ -24,14 +24,11 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml exec web python 
 docker compose -f docker-compose.yml -f docker-compose.prod.yml exec web python manage.py check --deploy
 ```
 
-Mode minimal menonaktifkan beat (`profiles: full`) dan memakai cron host:
+Service `beat` sudah jalan default (menjaga worker heartbeat, membersihkan job kedaluwarsa, dan memulihkan job macet). Backup harian via cron host:
 
 ```cron
-15 * * * * cd /opt/removebgku && docker compose -f docker-compose.yml -f docker-compose.prod.yml run --rm web ./scripts/start.sh cleanup
 30 2 * * * cd /opt/removebgku && ./deploy/vps/backup.sh
 ```
-
-Mode lengkap dijalankan dengan `docker compose ... --profile full up -d`.
 
 Update ke image terbaru: `./deploy/vps/update.sh`. Untuk rollback ke versi tertentu: `APP_IMAGE=mpratamamail/removebgku:1.0.0 ./deploy/vps/deploy.sh`. Volume database/media/model/Caddy/secret tetap dipertahankan.
 

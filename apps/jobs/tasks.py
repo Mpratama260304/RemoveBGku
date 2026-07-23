@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import io
 import logging
+import threading
 import time
 from datetime import timedelta
 
@@ -30,10 +31,28 @@ def _set_worker_heartbeat() -> str:
     return value
 
 
+def _heartbeat_loop() -> None:
+    # Refresh heartbeat langsung dari proses utama worker, tidak bergantung pada
+    # beat/broker dan tidak ter-blok saat task memproses gambar besar.
+    while True:
+        time.sleep(30)
+        try:
+            _set_worker_heartbeat()
+        except Exception:  # noqa: BLE001 - heartbeat harus tetap hidup
+            logger.warning("Gagal memperbarui worker heartbeat", exc_info=True)
+
+
+_heartbeat_started = False
+
+
 @worker_ready.connect
 @heartbeat_sent.connect
 def worker_heartbeat_signal(**kwargs):
+    global _heartbeat_started
     _set_worker_heartbeat()
+    if not _heartbeat_started:
+        _heartbeat_started = True
+        threading.Thread(target=_heartbeat_loop, name="worker-heartbeat", daemon=True).start()
 
 
 def get_rembg_session(model_name: str):
