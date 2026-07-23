@@ -1,5 +1,4 @@
 {
-  email {$CADDY_EMAIL}
   servers {
     trusted_proxies static private_ranges
   }
@@ -8,7 +7,7 @@
 {$DOMAIN:localhost} {
   encode zstd gzip
   request_body {
-    max_size 12MB
+    max_size 55MB
   }
   header {
     -Server

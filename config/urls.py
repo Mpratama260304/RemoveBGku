@@ -1,12 +1,17 @@
 from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
+from django.views.generic.base import RedirectView
 
 from apps.core import health
 from apps.jobs import views
 
 urlpatterns = [
     path("", views.home, name="home"),
+    path(
+        "favicon.ico",
+        RedirectView.as_view(url=settings.STATIC_URL + "favicon.ico", permanent=True),
+    ),
     path("history/", views.history, name="history"),
     path("privacy/", views.privacy, name="privacy"),
     path("terms/", views.terms, name="terms"),

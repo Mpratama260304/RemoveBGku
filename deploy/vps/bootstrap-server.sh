@@ -19,6 +19,6 @@ else
   $SUDO apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 fi
 
-$SUDO install -d -m 0750 -o "${SUDO_USER:-$USER}" -g "${SUDO_USER:-$USER}" /opt/hapusbackground
+$SUDO install -d -m 0750 -o "${SUDO_USER:-$USER}" -g "${SUDO_USER:-$USER}" /opt/removebgku
 echo "Server siap. Buka TCP 80/443 pada Tencent Security Group; batasi TCP 22 ke IP Anda."
 echo "Jangan membuka port PostgreSQL 5432 atau Redis 6379 ke internet."

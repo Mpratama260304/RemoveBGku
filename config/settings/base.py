@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import os
 from pathlib import Path
 
@@ -39,14 +40,43 @@ def env_list(name: str, default: str = "") -> list[str]:
     return [item.strip() for item in env(name, default).split(",") if item.strip()]
 
 
-SECRET_KEY = env("DJANGO_SECRET_KEY", "development-only-change-me")
-DEBUG = env_bool("DEBUG", False)
-ALLOWED_HOSTS = env_list("ALLOWED_HOSTS", "localhost,127.0.0.1,testserver")
-CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS")
+def _resolve_secret_key() -> str:
+    value = env("DJANGO_SECRET_KEY")
+    if value:
+        return value
+    state_dir = env("APP_STATE_DIR")
+    if state_dir:
+        key_path = Path(state_dir) / "secret_key"
+        try:
+            if key_path.is_file():
+                existing = key_path.read_text(encoding="utf-8").strip()
+                if existing:
+                    return existing
+            import secrets as _secrets
 
-SITE_NAME = env("SITE_NAME", "HapusBackground")
+            generated = _secrets.token_urlsafe(64)
+            key_path.parent.mkdir(parents=True, exist_ok=True)
+            key_path.write_text(generated, encoding="utf-8")
+            with contextlib.suppress(OSError):
+                key_path.chmod(0o600)
+            return generated
+        except OSError:
+            pass
+    return "development-only-change-me"
+
+
+SECRET_KEY = _resolve_secret_key()
+DEBUG = env_bool("DEBUG", False)
+DOMAIN = env("DOMAIN")
+_default_allowed_hosts = "localhost,127.0.0.1,testserver,web"
+if DOMAIN:
+    _default_allowed_hosts = f"{_default_allowed_hosts},{DOMAIN}"
+ALLOWED_HOSTS = env_list("ALLOWED_HOSTS", _default_allowed_hosts)
+CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS") or ([f"https://{DOMAIN}"] if DOMAIN else [])
+
+SITE_NAME = env("SITE_NAME", "REMOVEBGKU")
 SITE_TAGLINE = env("SITE_TAGLINE", "Hapus latar belakang gambar dengan mudah")
-APP_BASE_URL = env("APP_BASE_URL", "http://localhost:8000")
+APP_BASE_URL = env("APP_BASE_URL") or (f"https://{DOMAIN}" if DOMAIN else "http://localhost:8000")
 APP_VERSION = env("APP_VERSION", "dev")
 APP_DEPLOYED_AT = env("APP_DEPLOYED_AT", "")
 ADMIN_URL_PATH = env("ADMIN_URL_PATH", "admin/").strip("/") + "/"
@@ -155,9 +185,9 @@ else:
         "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
     }
 
-DATA_UPLOAD_MAX_MEMORY_SIZE = env_int("UPLOAD_MAX_BYTES", 10 * 1024 * 1024) + 1024 * 1024
-FILE_UPLOAD_MAX_MEMORY_SIZE = env_int("UPLOAD_MAX_BYTES", 10 * 1024 * 1024)
-UPLOAD_MAX_BYTES = env_int("UPLOAD_MAX_BYTES", 10 * 1024 * 1024)
+DATA_UPLOAD_MAX_MEMORY_SIZE = env_int("UPLOAD_MAX_BYTES", 50 * 1024 * 1024) + 1024 * 1024
+FILE_UPLOAD_MAX_MEMORY_SIZE = env_int("UPLOAD_MAX_BYTES", 50 * 1024 * 1024)
+UPLOAD_MAX_BYTES = env_int("UPLOAD_MAX_BYTES", 50 * 1024 * 1024)
 MAX_IMAGE_PIXELS = env_int("MAX_IMAGE_PIXELS", 36_000_000)
 MAX_IMAGE_WIDTH = env_int("MAX_IMAGE_WIDTH", 6000)
 MAX_IMAGE_HEIGHT = env_int("MAX_IMAGE_HEIGHT", 6000)
@@ -204,7 +234,7 @@ CACHES = {
         "BACKEND": "django.core.cache.backends.redis.RedisCache"
         if env_bool("USE_REDIS_CACHE", bool(DATABASE_URL))
         else "django.core.cache.backends.locmem.LocMemCache",
-        "LOCATION": REDIS_URL if env_bool("USE_REDIS_CACHE", bool(DATABASE_URL)) else "hapusbackground-cache",
+        "LOCATION": REDIS_URL if env_bool("USE_REDIS_CACHE", bool(DATABASE_URL)) else "removebgku-cache",
     }
 }
 

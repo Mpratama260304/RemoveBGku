@@ -1,6 +1,7 @@
 x-image: &production-image
-  image: ${APP_IMAGE:?Set APP_IMAGE ke tag image versioned}
+  image: ${APP_IMAGE:-mpratama260304/removebgku:latest}
   build: null
+  pull_policy: always
 
 services:
   web:

@@ -1,3 +1,20 @@
 {% extends "base.html" %}
 {% block title %}{{ code }} · {{ SITE_NAME }}{% endblock %}
-{% block content %}<section class="page-shell"><div class="container empty-state error-state"><span class="error-code">{{ code }}</span><h1>{{ title }}</h1><p>Permintaan tidak dapat diselesaikan. Coba kembali ke beranda atau ulangi beberapa saat lagi.</p><a class="button button-primary" href="{% url 'home' %}">Kembali ke beranda</a></div></section>{% endblock %}
+{% block content %}
+<section class="page-shell">
+  <div class="container empty-state error-state">
+    <span class="error-code">{{ code }}</span>
+    <h1>{{ title }}</h1>
+    <p class="error-lead">
+      {% if code == 404 %}Halaman yang kamu cari tidak ada, sudah dipindah, atau tautannya salah.
+      {% elif code == 403 %}Kamu tidak memiliki akses ke halaman ini.
+      {% elif code == 400 %}Permintaan tidak dapat diproses. Coba ulangi dengan data yang benar.
+      {% else %}Terjadi kesalahan di server kami. Coba lagi beberapa saat lagi.{% endif %}
+    </p>
+    <div class="error-actions">
+      <a class="button button-primary" href="{% url 'home' %}">Kembali ke beranda</a>
+      <a class="button button-secondary" href="{% url 'faq' %}">Buka FAQ</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

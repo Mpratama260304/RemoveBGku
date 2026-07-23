@@ -12,8 +12,8 @@ from apps.core.health import readiness_report
 
 
 class HapusAdminSite(AdminSite):
-    site_header = "HapusBackground"
-    site_title = "HapusBackground Admin"
+    site_header = "REMOVEBGKU"
+    site_title = "REMOVEBGKU Admin"
     index_title = "Dashboard Operasional"
     index_template = "admin/dashboard.html"
 

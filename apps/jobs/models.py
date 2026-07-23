@@ -139,7 +139,7 @@ class JobEvent(models.Model):
 
 
 class SiteConfiguration(models.Model):
-    site_name = models.CharField(max_length=100, default="HapusBackground")
+    site_name = models.CharField(max_length=100, default="REMOVEBGKU")
     site_tagline = models.CharField(max_length=255, default="Hapus latar belakang gambar dengan mudah")
     public_upload_enabled = models.BooleanField(default=True)
     maintenance_mode = models.BooleanField(default=False)
@@ -148,7 +148,7 @@ class SiteConfiguration(models.Model):
     )
     default_model = models.CharField(max_length=80, default="u2netp")
     allowed_models = models.JSONField(default=list, blank=True)
-    upload_max_bytes = models.PositiveIntegerField(default=10 * 1024 * 1024)
+    upload_max_bytes = models.PositiveIntegerField(default=50 * 1024 * 1024)
     max_image_pixels = models.PositiveIntegerField(default=36_000_000)
     retention_hours = models.PositiveIntegerField(default=24)
     max_active_jobs_per_session = models.PositiveSmallIntegerField(default=3)

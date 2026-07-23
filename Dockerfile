@@ -9,7 +9,7 @@ RUN --mount=type=cache,target=/root/.cache/pip pip install -r /tmp/requirements.
 
 FROM python:3.12.12-slim-bookworm AS runtime
 ARG APP_VERSION=dev
-LABEL org.opencontainers.image.title="HapusBackground" \
+LABEL org.opencontainers.image.title="REMOVEBGKU" \
       org.opencontainers.image.description="Server-side background removal with Django and rembg" \
       org.opencontainers.image.licenses="MIT" \
       org.opencontainers.image.version="$APP_VERSION"
@@ -23,12 +23,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends tini libgomp1 l
 COPY --from=builder /opt/venv /opt/venv
 WORKDIR /app
 COPY --chown=app:app . /app
-RUN mkdir -p /data/media /models /tmp/app /backups /app/staticfiles \
+RUN mkdir -p /data/media /data/state /models /tmp/app /backups /app/staticfiles \
     && chown -R app:app /data /models /tmp/app /backups /app/staticfiles \
     && chmod +x /app/scripts/*.sh /app/deploy/vps/*.sh
 USER app
 EXPOSE 8000
-VOLUME ["/data/media", "/models"]
+VOLUME ["/data/media", "/models", "/data/state"]
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
   CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/live/', timeout=3)"
 ENTRYPOINT ["/usr/bin/tini", "--"]

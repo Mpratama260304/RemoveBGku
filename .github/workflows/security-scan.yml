@@ -26,10 +26,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: docker build -t hapusbackground:scan .
+      - run: docker build -t removebgku:scan .
       - uses: aquasecurity/trivy-action@0.33.1
         with:
-          image-ref: hapusbackground:scan
+          image-ref: removebgku:scan
           format: sarif
           output: trivy-results.sarif
           severity: HIGH,CRITICAL

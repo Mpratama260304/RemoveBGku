@@ -3,7 +3,7 @@ requires = ["setuptools>=82"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "hapusbackground"
+name = "removebgku"
 version = "1.0.0"
 description = "Penghapus latar belakang gambar server-side berbasis Django dan rembg"
 requires-python = ">=3.12,<3.13"

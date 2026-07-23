@@ -1,8 +1,10 @@
-.PHONY: install dev test lint format migrate superuser bootstrap-admin docker-build docker-up docker-down logs doctor cleanup smoke-test
+.PHONY: install dev preview test lint format migrate superuser bootstrap-admin docker-build docker-up docker-down logs doctor cleanup smoke-test
 install:
 	python -m pip install -r requirements-dev.txt
 dev:
 	python manage.py runserver
+preview:
+	DEBUG=false python manage.py runserver --insecure
 test:
 	pytest
 lint:
@@ -16,7 +18,7 @@ superuser:
 bootstrap-admin:
 	python manage.py bootstrap_admin
 docker-build:
-	docker build -t hapusbackground:local .
+	docker build -t removebgku:local .
 docker-up:
 	docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 docker-down:

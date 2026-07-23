@@ -17,4 +17,5 @@ staticfiles/
 models/*.onnx
 data/
 backups/
+.state/
 *.log

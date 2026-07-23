@@ -67,8 +67,8 @@ jobs:
           context: .
           push: false
           load: true
-          tags: hapusbackground:ci
+          tags: removebgku:ci
           cache-from: type=gha
           cache-to: type=gha,mode=max
       - name: Container application check
-        run: docker run --rm -e DJANGO_SETTINGS_MODULE=config.settings.test hapusbackground:ci python manage.py check
+        run: docker run --rm -e DJANGO_SETTINGS_MODULE=config.settings.test removebgku:ci python manage.py check

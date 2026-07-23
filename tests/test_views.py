@@ -13,7 +13,7 @@ from tests.conftest import image_bytes
 def test_public_pages(client, url):
     response = client.get(url)
     assert response.status_code == 200
-    assert b"HapusBackground" in response.content
+    assert b"REMOVEBGKU" in response.content
 
 
 @pytest.mark.django_db

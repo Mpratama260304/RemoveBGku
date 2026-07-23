@@ -1,16 +1,34 @@
-name: hapusbackground
+name: removebgku
+
+x-env: &env
+  DJANGO_SETTINGS_MODULE: config.settings.production
+  APP_ENV: production
+  APP_VERSION: ${APP_VERSION:-latest}
+  DATABASE_URL: postgresql://${POSTGRES_USER:-removebgku}:${POSTGRES_PASSWORD:-removebgku}@postgres:5432/${POSTGRES_DB:-removebgku}
+  REDIS_URL: redis://redis:6379/0
+  CELERY_BROKER_URL: redis://redis:6379/0
+  CELERY_RESULT_BACKEND: redis://redis:6379/1
+  USE_REDIS_CACHE: "true"
+  DOMAIN: ${DOMAIN:-}
+  APP_STATE_DIR: /data/state
+  MEDIA_ROOT: /data/media
+  MODEL_CACHE_DIR: /models
+  U2NET_HOME: /models
+  BOOTSTRAP_ADMIN_ENABLED: "true"
 
 x-app: &app
+  image: ${APP_IMAGE:-mpratama260304/removebgku:latest}
   build:
     context: .
     args:
-      APP_VERSION: ${APP_VERSION:-dev}
-  env_file: .env
+      APP_VERSION: ${APP_VERSION:-latest}
+  environment: *env
   restart: unless-stopped
   networks: [backend]
   volumes:
     - media_data:/data/media
     - model_data:/models
+    - app_state:/data/state
   security_opt:
     - no-new-privileges:true
 
@@ -18,7 +36,8 @@ services:
   caddy:
     image: caddy:2.10.2-alpine
     restart: unless-stopped
-    env_file: .env
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
     ports:
       - "80:80"
       - "443:443"
@@ -81,9 +100,9 @@ services:
     image: postgres:17.6-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-removebgku}
+      POSTGRES_USER: ${POSTGRES_USER:-removebgku}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-removebgku}
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - backups_data:/backups
@@ -125,6 +144,7 @@ volumes:
   redis_data:
   media_data:
   model_data:
+  app_state:
   caddy_data:
   caddy_config:
   backups_data:

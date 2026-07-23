@@ -1,6 +1,6 @@
-# HapusBackground
+# REMOVEBGKU
 
-HapusBackground adalah aplikasi Django server-side untuk menghapus latar gambar memakai `rembg` dan ONNX Runtime CPU lokal. Browser mengunggah JPG/PNG/WebP, Django memvalidasi dan menyimpan job, Celery worker memprosesnya di luar request web, lalu pengguna dapat membandingkan dan mengunduh PNG transparan. Tidak ada API remove.bg atau layanan AI berbayar.
+REMOVEBGKU adalah aplikasi Django server-side untuk menghapus latar gambar memakai `rembg` dan ONNX Runtime CPU lokal. Browser mengunggah JPG/PNG/WebP, Django memvalidasi dan menyimpan job, Celery worker memprosesnya di luar request web, lalu pengguna dapat membandingkan dan mengunduh PNG transparan. Tidak ada API remove.bg atau layanan AI berbayar.
 
 > Gambar dikirim dan diproses di server. Jangan mengklaim bahwa pemrosesan hanya terjadi di perangkat pengguna.
 
@@ -51,8 +51,6 @@ Untuk development tanpa Docker: Python 3.12, Redis, dan PostgreSQL (SQLite hanya
 ## Quick start Docker
 
 ```bash
-cp .env.example .env
-# edit .env: database, Django/HMAC secrets, domain, dan bootstrap admin
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 ```
 
@@ -107,7 +105,7 @@ Gunakan `.env.example` sebagai daftar lengkap. Nilai penting:
 | Privasi | `SESSION_HASH_SECRET`, `IP_HASH_SECRET` (secret berbeda dari Django) |
 | Monitoring | `LOG_LEVEL`, `SENTRY_DSN`, `SENTRY_ENVIRONMENT` |
 
-Production startup menolak environment inti yang kosong. Hard limit environment membatasi nilai yang dapat diatur melalui SiteConfiguration admin.
+Deploy produksi berjalan tanpa konfigurasi: `SECRET_KEY` dibuat dan disimpan otomatis di volume, `DATABASE_URL` serta host diisi default oleh Compose, dan admin awal dibuat otomatis (password muncul di log service `web`). Set `STRICT_ENV=true` bila ingin memaksa validasi environment inti. Hard limit environment membatasi nilai yang dapat diatur melalui SiteConfiguration admin.
 
 ## Model rembg
 
@@ -164,8 +162,7 @@ Ikuti [`deploy/vps/README.md`](deploy/vps/README.md). Ringkas:
 
 ```bash
 sudo ./deploy/vps/bootstrap-server.sh
-cp .env.production.example .env.production
-nano .env.production
+# Opsional untuk HTTPS otomatis: echo "DOMAIN=domain-kamu.com" > .env
 ./deploy/vps/deploy.sh
 ```
 
@@ -219,8 +216,8 @@ make lint
 make test
 python manage.py makemigrations --check --dry-run
 python manage.py check
-DJANGO_SETTINGS_MODULE=config.settings.production SKIP_PRODUCTION_ENV_VALIDATION=true python manage.py check --deploy
-docker build -t hapusbackground:local .
+DJANGO_SETTINGS_MODULE=config.settings.production APP_STATE_DIR=.state python manage.py check --deploy
+docker build -t removebgku:local .
 ```
 
 Test mencakup accounts/bootstrap, format upload dan file palsu, session ownership, state machine, task success/failure/idempotency, download/delete, retry, cleanup/pinned/dry-run, admin/audit, headers/CSRF/hard limits, dan health failure. Target coverage aplikasi 80%.
@@ -229,14 +226,13 @@ Security workflow menjalankan `pip-audit` serta Trivy untuk HIGH/CRITICAL dan `i
 
 ## Update dan rollback
 
-VPS harus memakai tag image versioned, bukan `latest` sebagai satu-satunya referensi:
+Update menarik image terbaru lalu recreate otomatis:
 
 ```bash
-# ubah APP_IMAGE di .env.production
 ./deploy/vps/update.sh
 ```
 
-Script membuat backup, menyimpan tag sebelumnya, pull, migration-lock, recreate, dan health check. Jika gagal, redeploy tag sebelumnya. Sebelum rollback aplikasi melewati migration, periksa kompatibilitas schema dan pulihkan backup bila migration tidak backward-compatible.
+Script membuat backup database, pull image, migration-lock, recreate, dan health check. Untuk rollback ke versi tertentu, set `APP_IMAGE` ke tag versioned lalu jalankan deploy, mis. `APP_IMAGE=mpratama260304/removebgku:1.0.0 ./deploy/vps/deploy.sh`. Sebelum rollback yang melewati migration, periksa kompatibilitas schema dan pulihkan backup bila migration tidak backward-compatible.
 
 ## Troubleshooting
 
@@ -250,7 +246,7 @@ Script membuat backup, menyimpan tag sebelumnya, pull, migration-lock, recreate,
 | Volume permission denied | Pastikan UID 10001 memiliki `/data/media`, `/models`, `/tmp/app`. |
 | Sertifikat Caddy gagal | Periksa A record, 80/443, Caddy email/log, dan proxy/CDN mode. |
 | CSRF origin gagal | Gunakan origin lengkap dengan `https://` pada `CSRF_TRUSTED_ORIGINS`. |
-| HTTP 413 | Selaraskan `UPLOAD_MAX_BYTES`, Django data limit, dan Caddy request body (default 12 MB). |
+| HTTP 413 | Selaraskan `UPLOAD_MAX_BYTES`, Django data limit, dan Caddy request body (default 55 MB). |
 | Container OOM | Worker concurrency satu, gunakan u2netp, kurangi batas pixel, tambah RAM; swap hanya penyangga. |
 | Railway/Render media hilang | Gunakan S3; filesystem ephemeral bukan storage media. |
 | S3 signature mismatch | Periksa endpoint, region, addressing style, clock, dan signature v4. |
