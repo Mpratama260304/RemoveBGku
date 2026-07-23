@@ -1,5 +1,5 @@
 x-image: &production-image
-  image: ${APP_IMAGE:-mpratama260304/removebgku:latest}
+  image: ${APP_IMAGE:-mpratamamail/removebgku:latest}
   build: null
   pull_policy: always
 

@@ -232,7 +232,7 @@ Update menarik image terbaru lalu recreate otomatis:
 ./deploy/vps/update.sh
 ```
 
-Script membuat backup database, pull image, migration-lock, recreate, dan health check. Untuk rollback ke versi tertentu, set `APP_IMAGE` ke tag versioned lalu jalankan deploy, mis. `APP_IMAGE=mpratama260304/removebgku:1.0.0 ./deploy/vps/deploy.sh`. Sebelum rollback yang melewati migration, periksa kompatibilitas schema dan pulihkan backup bila migration tidak backward-compatible.
+Script membuat backup database, pull image, migration-lock, recreate, dan health check. Untuk rollback ke versi tertentu, set `APP_IMAGE` ke tag versioned lalu jalankan deploy, mis. `APP_IMAGE=mpratamamail/removebgku:1.0.0 ./deploy/vps/deploy.sh`. Sebelum rollback yang melewati migration, periksa kompatibilitas schema dan pulihkan backup bila migration tidak backward-compatible.
 
 ## Troubleshooting
 

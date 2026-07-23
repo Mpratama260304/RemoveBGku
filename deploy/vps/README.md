@@ -33,7 +33,7 @@ Mode minimal menonaktifkan beat (`profiles: full`) dan memakai cron host:
 
 Mode lengkap dijalankan dengan `docker compose ... --profile full up -d`.
 
-Update ke image terbaru: `./deploy/vps/update.sh`. Untuk rollback ke versi tertentu: `APP_IMAGE=mpratama260304/removebgku:1.0.0 ./deploy/vps/deploy.sh`. Volume database/media/model/Caddy/secret tetap dipertahankan.
+Update ke image terbaru: `./deploy/vps/update.sh`. Untuk rollback ke versi tertentu: `APP_IMAGE=mpratamamail/removebgku:1.0.0 ./deploy/vps/deploy.sh`. Volume database/media/model/Caddy/secret tetap dipertahankan.
 
 Untuk RAM 4 GB, swap 2 GB dapat mengurangi risiko OOM saat lonjakan singkat (`fallocate`, `mkswap`, `swapon`), tetapi swap bukan pengganti RAM. Pertahankan concurrency worker satu.
 

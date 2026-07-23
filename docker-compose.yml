@@ -17,7 +17,7 @@ x-env: &env
   BOOTSTRAP_ADMIN_ENABLED: "true"
 
 x-app: &app
-  image: ${APP_IMAGE:-mpratama260304/removebgku:latest}
+  image: ${APP_IMAGE:-mpratamamail/removebgku:latest}
   build:
     context: .
     args:
