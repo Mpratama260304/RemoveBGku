@@ -1,0 +1,23 @@
+services:
+  caddy:
+    profiles: [proxy]
+  web:
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.development
+      DEBUG: "true"
+      SECURE_SSL_REDIRECT: "false"
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+      - media_data:/data/media
+      - model_data:/models
+  worker:
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.development
+    volumes:
+      - .:/app
+      - media_data:/data/media
+      - model_data:/models
+  beat:
+    profiles: [full]

@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Hapus background gambar dalam sekali klik · {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="hero-orb orb-one"></div><div class="hero-orb orb-two"></div>
+  <div class="container hero-grid">
+    <div class="hero-copy">
+      <div class="eyebrow"><span></span>AI lokal · Tanpa API berbayar</div>
+      <h1>Background hilang.<br><em>Fokus tetap tajam.</em></h1>
+      <p class="hero-lead">Unggah foto dan dapatkan PNG transparan dalam beberapa saat. Gambar diproses oleh AI di server kami dan dihapus otomatis setelah {{ config.retention_hours }} jam.</p>
+      <div class="trust-row">
+        <span><b>✓</b> Tanpa registrasi</span><span><b>✓</b> Hasil PNG transparan</span><span><b>✓</b> Maks. {{ config.upload_max_bytes|filesizeformat }}</span>
+      </div>
+    </div>
+    <div class="upload-shell" id="upload" data-upload-url="{% url 'jobs:upload' %}" data-max-bytes="{{ config.upload_max_bytes }}">
+      <div class="upload-top">
+        <div><span class="step-label">LANGKAH 1</span><h2>Pilih gambar</h2></div>
+        <span class="private-pill">Privat</span>
+      </div>
+      <form id="upload-form" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+        <label class="dropzone" for="image-input" id="dropzone">
+          <input id="image-input" name="image" type="file" accept="image/jpeg,image/png,image/webp" required>
+          <span class="upload-icon" aria-hidden="true"><i></i></span>
+          <strong>Tarik gambar ke sini</strong>
+          <span>atau <u>pilih dari perangkat</u></span>
+          <small>JPG, PNG, WEBP · hingga {{ config.upload_max_bytes|filesizeformat }}</small>
+        </label>
+        <div class="file-preview" id="file-preview" hidden>
+          <img id="preview-image" alt="Pratinjau gambar pilihan">
+          <div><strong id="file-name"></strong><span id="file-size"></span></div>
+          <button type="button" id="clear-file" aria-label="Hapus pilihan gambar">×</button>
+        </div>
+        <fieldset class="mode-fieldset">
+          <legend>Mode pemrosesan</legend>
+          <div class="mode-options">
+            <label class="mode-option"><input type="radio" name="mode" value="u2netp" checked><span><b>Cepat</b><small>Optimal untuk objek sederhana</small></span><i>Rekomendasi</i></label>
+            {% if 'isnet-general-use' in config.allowed_models %}
+            <label class="mode-option"><input type="radio" name="mode" value="isnet-general-use"><span><b>Kualitas</b><small>Detail lebih halus, lebih lama</small></span></label>
+            {% endif %}
+          </div>
+        </fieldset>
+        <div id="upload-notice" class="form-notice" role="alert" aria-live="polite"></div>
+        <div class="upload-progress" id="upload-progress" hidden><span></span></div>
+        <button id="submit-upload" class="button button-primary button-wide" type="submit" disabled>Hapus Background <span aria-hidden="true">→</span></button>
+      </form>
+      <p class="server-note"><span aria-hidden="true">◈</span> Gambar dikirim dan diproses di server. Jangan unggah dokumen sangat sensitif.</p>
+    </div>
+  </div>
+</section>
+
+<section class="benefit-strip">
+  <div class="container benefit-grid">
+    <article><span>01</span><div><h3>Alpha yang bersih</h3><p>Unduh PNG transparan siap dipakai.</p></div></article>
+    <article><span>02</span><div><h3>Tak perlu akun</h3><p>Riwayat tersimpan di sesi browser ini.</p></div></article>
+    <article><span>03</span><div><h3>Hapus otomatis</h3><p>File kedaluwarsa setelah {{ config.retention_hours }} jam.</p></div></article>
+  </div>
+</section>
+
+<section class="section steps-section">
+  <div class="container">
+    <div class="section-heading"><div><span class="kicker">CARA KERJA</span><h2>Tiga langkah. Selesai.</h2></div><p>Tidak ada instalasi, tidak ada pengaturan rumit. AI berjalan asynchronous agar halaman tetap ringan.</p></div>
+    <div class="steps-grid">
+      <article><span class="step-number">01</span><div class="step-icon">↥</div><h3>Unggah</h3><p>Pilih JPG, PNG, atau WebP hingga {{ config.upload_max_bytes|filesizeformat }}.</p></article>
+      <article><span class="step-number">02</span><div class="step-icon">✦</div><h3>AI memproses</h3><p>Worker server mengisolasi objek dari latar. Anda dapat memantau statusnya.</p></article>
+      <article><span class="step-number">03</span><div class="step-icon">↓</div><h3>Unduh</h3><p>Bandingkan hasil, lalu unduh PNG transparan beresolusi asli.</p></article>
+    </div>
+  </div>
+</section>
+
+<section class="section faq-section">
+  <div class="container faq-layout">
+    <div><span class="kicker">PERTANYAAN UMUM</span><h2>Yang perlu Anda tahu.</h2><p>Masih penasaran? Lihat <a href="{% url 'faq' %}">semua pertanyaan</a>.</p></div>
+    <div class="accordion">
+      <details><summary>Apakah gambar diproses di perangkat saya?<span>+</span></summary><p>Tidak. File dikirim melalui koneksi web dan diproses oleh model AI pada server.</p></details>
+      <details><summary>Berapa lama gambar disimpan?<span>+</span></summary><p>Secara default {{ config.retention_hours }} jam, kecuali Anda menghapusnya lebih cepat dari Riwayat.</p></details>
+      <details><summary>Mengapa hasil bisa kurang rapi?<span>+</span></summary><p>Kontras rendah, subjek terlalu kecil, rambut halus, atau latar ramai dapat memengaruhi hasil model.</p></details>
+    </div>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}<script src="{% static 'js/upload.js' %}" defer></script>{% endblock %}

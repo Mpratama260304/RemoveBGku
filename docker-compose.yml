@@ -1,0 +1,130 @@
+name: hapusbackground
+
+x-app: &app
+  build:
+    context: .
+    args:
+      APP_VERSION: ${APP_VERSION:-dev}
+  env_file: .env
+  restart: unless-stopped
+  networks: [backend]
+  volumes:
+    - media_data:/data/media
+    - model_data:/models
+  security_opt:
+    - no-new-privileges:true
+
+services:
+  caddy:
+    image: caddy:2.10.2-alpine
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./deploy/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks: [frontend, backend]
+    depends_on:
+      web:
+        condition: service_healthy
+
+  web:
+    <<: *app
+    command: ["./scripts/start.sh", "web"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 768M
+
+  worker:
+    <<: *app
+    command: ["./scripts/start.sh", "worker"]
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A config inspect ping -d celery@$$HOSTNAME --timeout=5 | grep -q pong"]
+      interval: 30s
+      timeout: 10s
+      start_period: 180s
+      retries: 3
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 2300M
+
+  beat:
+    <<: *app
+    command: ["./scripts/start.sh", "beat"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 160M
+
+  postgres:
+    image: postgres:17.6-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - backups_data:/backups
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks: [backend]
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  redis:
+    image: redis:7.4.7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "192mb", "--maxmemory-policy", "allkeys-lru"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [backend]
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+networks:
+  frontend:
+  backend:
+    internal: true
+
+volumes:
+  postgres_data:
+  redis_data:
+  media_data:
+  model_data:
+  caddy_data:
+  caddy_config:
+  backups_data:

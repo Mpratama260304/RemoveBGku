@@ -1,0 +1,30 @@
+{% extends "admin/index.html" %}
+{% load i18n %}
+{% block content %}
+<div class="ops-dashboard">
+  <section class="ops-hero"><div><span class="ops-eyebrow">RINGKASAN LANGSUNG</span><h1>Dashboard Operasional</h1><p>Pantau antrean, hasil pemrosesan, penyimpanan, dan kesehatan layanan dari satu tempat.</p></div><a class="ops-primary" href="{% url 'admin:jobs_imagejob_changelist' %}">Lihat semua pekerjaan →</a></section>
+  <section class="kpi-grid">
+    <article><span>Hari ini</span><strong>{{ kpis.today }}</strong><small>pekerjaan</small></article>
+    <article><span>7 hari</span><strong>{{ kpis.seven_days }}</strong><small>pekerjaan</small></article>
+    <article><span>30 hari</span><strong>{{ kpis.thirty_days }}</strong><small>pekerjaan</small></article>
+    <article><span>Success rate</span><strong>{{ kpis.success_rate }}%</strong><small>selesai vs gagal</small></article>
+    <article><span>Dalam antrean</span><strong>{{ kpis.queued }}</strong><small>menunggu worker</small></article>
+    <article><span>Diproses</span><strong>{{ kpis.processing }}</strong><small>aktif saat ini</small></article>
+    <article><span>Berhasil</span><strong>{{ kpis.succeeded }}</strong><small>seluruh periode</small></article>
+    <article><span>Gagal</span><strong>{{ kpis.failed }}</strong><small>seluruh periode</small></article>
+    <article><span>Rata-rata</span><strong>{% if kpis.avg_duration %}{{ kpis.avg_duration|floatformat:0 }} ms{% else %}—{% endif %}</strong><small>durasi proses</small></article>
+    <article><span>P95</span><strong>{% if kpis.p95_duration %}{{ kpis.p95_duration }} ms{% else %}—{% endif %}</strong><small>durasi proses</small></article>
+    <article><span>Kedaluwarsa</span><strong>{{ kpis.expired }}</strong><small>siap dibersihkan</small></article>
+  </section>
+  <div class="ops-columns">
+    <section class="ops-panel"><div class="panel-head"><div><h2>Volume 30 hari</h2><p>Jumlah job harian dan hasil sukses.</p></div></div><canvas class="ops-chart" data-chart-table="daily-data" aria-label="Grafik volume pekerjaan 30 hari"></canvas><div class="chart-table"><table id="daily-data"><thead><tr><th>Tanggal</th><th>Total</th><th>Berhasil</th><th>Perbandingan</th></tr></thead><tbody>{% for row in daily %}<tr><td>{{ row.day|date:"d M" }}</td><td>{{ row.total }}</td><td>{{ row.succeeded }}</td><td><progress max="{{ row.total|default:1 }}" value="{{ row.succeeded }}">{{ row.succeeded }}/{{ row.total }}</progress></td></tr>{% empty %}<tr><td colspan="4">Belum ada data.</td></tr>{% endfor %}</tbody></table></div></section>
+    <section class="ops-panel health-panel"><div class="panel-head"><div><h2>Kesehatan sistem</h2><p>Pemeriksaan komponen inti.</p></div></div><ul>{% for name, state in system_health.items %}<li><span><i class="health-dot health-{{ state }}"></i>{{ name|title }}</span><b>{{ state|upper }}</b></li>{% endfor %}</ul><div class="storage-summary"><span>Original aktif</span><b>{{ kpis.total_original|filesizeformat }}</b><span>Hasil aktif</span><b>{{ kpis.total_result|filesizeformat }}</b><span>Dipin</span><b>{{ kpis.pinned }}</b><span>Versi</span><b>{{ app_version }}</b><span>Server</span><b>{{ server_time|date:"d M H:i T" }}</b>{% if deployed_at %}<span>Deploy</span><b>{{ deployed_at }}</b>{% endif %}</div></section>
+  </div>
+  <div class="ops-columns">
+    <section class="ops-panel"><div class="panel-head"><div><h2>Penggunaan model</h2><p>Distribusi mode teknis.</p></div></div><div class="chart-table"><table><thead><tr><th>Model</th><th>Total</th></tr></thead><tbody>{% for row in model_usage %}<tr><td>{{ row.model_name }}</td><td>{{ row.total }}</td></tr>{% empty %}<tr><td colspan="2">Belum ada data.</td></tr>{% endfor %}</tbody></table></div></section>
+    <section class="ops-panel"><div class="panel-head"><div><h2>Distribusi error</h2><p>Kode publik/internal teragregasi.</p></div></div><div class="chart-table"><table><thead><tr><th>Kode</th><th>Total</th></tr></thead><tbody>{% for row in error_distribution %}<tr><td>{{ row.error_code|default:"UNKNOWN" }}</td><td>{{ row.total }}</td></tr>{% empty %}<tr><td colspan="2">Belum ada kegagalan.</td></tr>{% endfor %}</tbody></table></div></section>
+  </div>
+  <section class="ops-panel recent-panel"><div class="panel-head"><div><h2>Pekerjaan terbaru</h2><p>Aktivitas paling baru pada seluruh sesi.</p></div><a href="{% url 'admin:jobs_imagejob_changelist' %}">Buka daftar lengkap</a></div><div class="recent-table"><table><thead><tr><th>ID</th><th>File</th><th>Status</th><th>Mode</th><th>Ukuran</th><th>Dimensi</th><th>Waktu</th></tr></thead><tbody>{% for job in recent_jobs %}<tr><td><a href="{% url 'admin:jobs_imagejob_change' job.pk %}">{{ job.public_id|stringformat:"s"|slice:":8" }}</a></td><td>{{ job.original_filename }}</td><td><span class="status-pill status-{{ job.status }}">{{ job.get_status_display }}</span></td><td>{{ job.mode_label }}</td><td>{{ job.original_size_bytes|filesizeformat }}</td><td>{{ job.original_width }}×{{ job.original_height }}</td><td>{{ job.created_at|timesince }} lalu</td></tr>{% empty %}<tr><td colspan="7">Belum ada pekerjaan.</td></tr>{% endfor %}</tbody></table></div></section>
+  <section class="django-modules">{{ block.super }}</section>
+</div>
+{% endblock %}
