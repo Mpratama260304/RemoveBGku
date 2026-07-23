@@ -23,9 +23,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends tini libgomp1 l
 COPY --from=builder /opt/venv /opt/venv
 WORKDIR /app
 COPY --chown=app:app . /app
-RUN mkdir -p /data/media /data/state /models /tmp/app /backups /app/staticfiles \
-    && chown -R app:app /data /models /tmp/app /backups /app/staticfiles \
+RUN mkdir -p /data/media /data/state /models /tmp/app /backups /app/staticfiles /opt/models \
+    && chown -R app:app /data /models /tmp/app /backups /app/staticfiles /opt/models \
     && chmod +x /app/scripts/*.sh /app/deploy/vps/*.sh
+# Pra-unduh model rembg ke dalam image saat build agar runtime tidak perlu akses
+# internet (VPS mungkin tidak dapat menjangkau GitHub). scripts/download-models.py
+# menyalin file ini dari /opt/models ke U2NET_HOME saat container start.
+ARG BAKE_MODELS="u2netp"
+RUN for m in $BAKE_MODELS; do \
+      U2NET_HOME=/opt/models HOME=/tmp/app python -c "import sys; from rembg import new_session; new_session(sys.argv[1])" "$m"; \
+    done \
+    && chown -R app:app /opt/models
 USER app
 EXPOSE 8000
 VOLUME ["/data/media", "/models", "/data/state"]
